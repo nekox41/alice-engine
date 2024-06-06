@@ -1,0 +1,79 @@
+;
+; aa64.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%ManufacturerName%
+CatalogFile=aa64.cat
+DriverVer = 06/06/2024,13.42.9.966
+
+[DestinationDirs]
+DefaultDestDir = 12
+aa64_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+aa64.sys  = 1,,
+WdfCoInstaller01009.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTamd64
+
+[Standard.NTamd64]
+%aa64.DeviceDesc%=aa64_Device, Root\aa64 ; TODO: edit hw-id
+
+[aa64_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+aa64.sys
+
+;-------------- Service installation
+[aa64_Device.NT.Services]
+AddService = aa64,%SPSVCINST_ASSOCSERVICE%, aa64_Service_Inst
+
+; -------------- aa64 driver install sections
+[aa64_Service_Inst]
+DisplayName    = %aa64.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\aa64.sys
+
+;
+;--- aa64_Device Coinstaller installation ------
+;
+
+[aa64_Device.NT.CoInstallers]
+AddReg=aa64_Device_CoInstaller_AddReg
+CopyFiles=aa64_Device_CoInstaller_CopyFiles
+
+[aa64_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01009.dll,WdfCoInstaller"
+
+[aa64_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01009.dll
+
+[aa64_Device.NT.Wdf]
+KmdfService =  aa64, aa64_wdfsect
+[aa64_wdfsect]
+KmdfLibraryVersion = 1.9
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Alice Engine" ;TODO: Replace with your manufacturer name
+ClassName="System" ; TODO: edit ClassName
+DiskName = "aa64 Installation Disk"
+aa64.DeviceDesc = "aa64 Device"
+aa64.SVCDESC = "aa64 Service"
